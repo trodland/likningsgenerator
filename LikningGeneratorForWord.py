@@ -3,19 +3,16 @@ from lxml import etree
 import qrcode
 import random
 
-
-
-
 def generate_eq():
     # Generer likning på formen: a + bx/f = c + dx
     low = -10
     high = 10
-    # enkle
+
     a = random.choice([i for i in range(low,high) if i not in [0]])
     b = random.choice([i for i in range(low,high) if i not in [0]])
     x = random.choice([i for i in range(low,high) if i not in [0]])
 
-    f = random.choice([i for i in range(low,high) if i not in [-1,0,1,b,abs(b*-1)]])
+    f = random.choice([i for i in range(low,high) if i not in [-1,0,1,b,b*-1]])
 
     c = random.choice([i for i in range(low,high) if i not in [0]])
     d = random.choice([i for i in range(low,high) if i not in [0,b]])
@@ -24,30 +21,18 @@ def generate_eq():
     for e in ["a","b*x/f"]:
         e_str = e.replace("a",str(a)).replace("b",str(b)).replace("f",str(f)).replace("x",str(x))
         vs.append(e_str)
-        
     
-    vs_val_string = ''
-    for e in vs:
-        vs_val_string += "(" +e +")+"
-    
-    vs_val_string = vs_val_string[:-1] 
-    vs_val_string = vs_val_string.replace("(=)","=")
-    vs_val_string = vs_val_string.replace("+=","=")
-    vs_val_string = vs_val_string.replace("=+","=")
-    vs_val_string = vs_val_string.replace("+-","-")
-    vs_val_string = vs_val_string.replace("-1*","")
-    vs_val_string = vs_val_string.replace("1*","")
-    
-   # print(vs_val_string)
-    vs_value = eval(vs_val_string)
-    #print(vs_value)
-    
+    vs_sum = 0
+    for ledd in vs:
+        vs_sum += eval(ledd)
+   
     dx_val = eval("d*x")
-    c_val = vs_value - dx_val
+    c_val = vs_sum - dx_val
+ 
     if c_val % 1 != 0 or c_val == 0:
         return(False,False)
         
-    #print(a,b,c,f,x)
+    # Stokker om på rekkefølgen av leddene.     
     if random.randint(0,1):
         vs_string = f'{a};{b}x/{f}'
     else:
@@ -67,13 +52,8 @@ def generate_eq():
     eq_string = eq_string.replace(".0","")
     eq_string = eq_string.replace(".",",")
     
-    
-    print(eq_string, x)
-    
     return(eq_string,x)
 
-
-#https://elsenaju.eu/mathml/MathML-Examples.htm
 def math_to_word(eq):
     tree = etree.fromstring(eq)
     xslt = etree.parse("MML2OMML.XSL")
@@ -102,14 +82,11 @@ def eq_to_MathML(eqList):
             MathML_string += f'<mfrac><mrow><mi>{teller}</mi></mrow><mi>{nevner}</mi></mfrac>'
         else:  
             MathML_string += f'<mi>{ledd}</mi>'
-            
+           
         if ledd == "=":
             first = True
-            
         # Legg til støtte for potenser: https://developer.mozilla.org/en-US/docs/Web/MathML/Element/msup
-        
     return MathML_string
-
 
 mathstr_start = '<math xmlns="http://www.w3.org/1998/Math/MathML">'
 mathstr_end = '</math>'
@@ -139,4 +116,3 @@ for row in table.rows:
         nr += 1
 
 doc.save('test2.docx')
-
